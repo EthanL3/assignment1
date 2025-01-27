@@ -44,18 +44,18 @@ def test_validate_coordinates():
 
 def test_read_and_clean_data():
     column_names = {
-        "test1.csv": ("latitude_column", "longitude_column"),
-        "test2.csv": ('lat', 'lon')
+        "tests/test1.csv": ("latitude_column", "longitude_column"),
+        "tests/test2.csv": ('lat', 'lon')
     }
 
-    lat_arr, lon_arr = read_and_clean_data("test1.csv", column_names)
+    lat_arr, lon_arr = read_and_clean_data("tests/test1.csv", column_names)
     expected_lat = [12.3, -12.4, 14.5, -68.223]
     expected_lon = [-47.2, -120.3, 58.21, -48.382]
     assert np.array_equal(lat_arr, expected_lat), f"Expected {expected_lat}, but got {lat_arr}"
     assert np.array_equal(lon_arr, expected_lon), f"Expected {expected_lon}, but got {lon_arr}"
 
-    lat_arr_1, lon_arr_1 = read_and_clean_data("test1.csv", column_names)
-    lat_arr_2, lon_arr_2 = read_and_clean_data("test2.csv", column_names)
+    lat_arr_1, lon_arr_1 = read_and_clean_data("tests/test1.csv", column_names)
+    lat_arr_2, lon_arr_2 = read_and_clean_data("tests/test2.csv", column_names)
     
     expected_lat_1 = [12.3, -12.4, 14.5, -68.223]
     expected_lon_1 = [-47.2, -120.3, 58.21, -48.382]
@@ -77,10 +77,10 @@ def test_find_closest_point():
     assert closest_lon == 58.21, f"Expected {58.21}, but got {closest_lon}"
 
 def test_match_points():
-    csv_paths = ['test1.csv', 'test2.csv']
+    csv_paths = ['tests/test1.csv', 'tests/test2.csv']
     column_names = {
-        'test1.csv': ('latitude_column', 'longitude_column'),
-        'test2.csv': ('lat', 'lon')
+        'tests/test1.csv': ('latitude_column', 'longitude_column'),
+        'tests/test2.csv': ('lat', 'lon')
     }
 
     point = (13.5, 38.59)
