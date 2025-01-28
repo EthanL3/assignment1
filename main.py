@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import numpy as np
 
@@ -5,16 +7,14 @@ def haversine(lat1, lon1, lat2, lon2, unit_type="deg"):
     """Calculate the Haversine distance between two geographic points."""
     R = 6371.0
     if unit_type == "deg":
-        # Degrees to radians
         lat1, lon1, lat2, lon2 = np.radians([lat1, lon1, lat2, lon2])
     elif unit_type == "arcmin":
-        # Arcminutes to radians: arcmin / 60 degrees, then convert to radians
         lat1, lon1, lat2, lon2 = np.radians([lat1 / 60, lon1 / 60, lat2 / 60, lon2 / 60])
     elif unit_type == "rad":
-        # No conversion needed for radians
         pass
     else:
-        raise ValueError("Invalid unit_type. Use 'deg', 'arcmin', or 'rad'.")
+        print("Invalid unit_type. Use 'deg', 'arcmin', or 'rad'.")
+        sys.exit(1)
     
     dlat = lat2 - lat1
     dlon = lon2 - lon1
@@ -28,19 +28,20 @@ def validate_coordinates(coord_str, is_latitude=True):
     """Validate that the coordinate is a valid decimal number (strictly decimal degrees) and within valid range."""
     try:
         coord_value = float(coord_str)
-        
         if is_latitude:
             if coord_value < -90 or coord_value > 90:
-                raise ValueError(f"Latitude out of range: {coord_value}. Must be between -90 and 90.")
-        
+                print(f"Latitude out of range: {coord_value}. Must be between -90 and 90.")
+                raise ValueError()
+
         else:
             if coord_value < -180 or coord_value > 180:
-                raise ValueError(f"Longitude out of range: {coord_value}. Must be between -180 and 180.")
-        
+                print(f"Longitude out of range: {coord_value}. Must be between -180 and 180.")
+                raise ValueError()
+
         return coord_value
-    
     except ValueError:
-        raise ValueError(f"Invalid coordinate format: '{coord_str}'. Coordinates must be strictly decimal degrees and within valid range.")
+        print(f"Invalid coordinate format: '{coord_str}'. Coordinates must be strictly decimal degrees and within valid range.")
+        sys.exit(1)
 
 def read_and_clean_data(csv_path, column_names):
     """Read CSV files and clean data (drop NaN and Inf values, parse and validate coordinates)."""
@@ -96,7 +97,6 @@ def match_points(csv_paths, column_names, point=None):
         return closest_points
 
 if __name__ == "__main__":
-
     # example usage
     point = (1, 1)
     csv_paths = ['airports.csv', 'countries.csv']
