@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from io import StringIO
+import tracemalloc
 from main import haversine, match_points, validate_coordinates, read_and_clean_data, find_closest_point
 
 
@@ -80,7 +81,6 @@ def test_match_points_1():
     column_names = {
         'tests/Boston.csv': ('latitude', 'longitude')
     }
-
     point = (42.350724, -71.102878)
     closest_lat, closest_lon = match_points("tests/Boston.csv", column_names, point)
     assert closest_lat == 42.34988626501212, f"Expected {42.34988626501212}, but got {closest_lat}"

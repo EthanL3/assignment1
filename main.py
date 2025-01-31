@@ -1,4 +1,8 @@
+import cProfile
+import pstats
+import io
 import sys
+import tracemalloc
 
 import pandas as pd
 import numpy as np
@@ -83,9 +87,10 @@ def find_closest_point(lat_arr, lon_arr, point):
 
 def match_points(csv_paths, column_names, point=None):
     """Match each point in the first array to the closest one in the second array (CSV)."""
+    snapshot1 = tracemalloc.take_snapshot()
     if point is not None:
         lat_arr, lon_arr = read_and_clean_data(csv_paths, column_names)
-        return find_closest_point(lat_arr, lon_arr, point)
+        result = find_closest_point(lat_arr, lon_arr, point)
     else:
         lat_arr_1, lon_arr_1 = read_and_clean_data(csv_paths[0], column_names)
         lat_arr_2, lon_arr_2 = read_and_clean_data(csv_paths[1], column_names)
@@ -94,17 +99,48 @@ def match_points(csv_paths, column_names, point=None):
             closest_lat, closest_lon = find_closest_point(lat_arr_2, lon_arr_2, (lat1, lon1))
             closest_points.append((closest_lat, closest_lon))
         
-        return closest_points
+        result = closest_points
+
+    snapshot2 = tracemalloc.take_snapshot()
+    top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+    print("\nTop memory usage differences:")
+    for stat in top_stats[:5]:
+        print(stat)
+
+    return result
+
+def profile_function(func, *args, **kwargs):
+    """Profile a function using cProfile and print the top results."""
+    profiler = cProfile.Profile()
+    profiler.enable()
+
+    result = func(*args, **kwargs)
+
+    profiler.disable()
+
+    s = io.StringIO()
+    stats = pstats.Stats(profiler, stream=s)
+    stats.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(10)  # Top 10 CPU consumers
+
+    print("\nCPU Profiling Results:")
+    print(s.getvalue())  # Print the profiling results
+
+    return result
+
 
 if __name__ == "__main__":
-    # example usage
-    point = (1, 1)
-    csv_paths = ['airports.csv', 'countries.csv']
+    tracemalloc.start()
+
+    point = (-70, 50)
+    csv_paths = ['tests/Boston.csv']
     
     column_names = {
-        'airports.csv': ('latitude', 'longitude'),
-        'countries.csv': ('lat', 'lng')
+        'tests/Boston.csv': ('latitude', 'longitude')
     }
-    
-    print(match_points(csv_paths, column_names))
-    print(match_points(csv_paths[0], column_names, point))
+    result = profile_function(match_points, csv_paths[0], column_names, point)
+    print(result)
+
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"\nCurrent memory usage: {current / 1024:.2f} KB; Peak: {peak / 1024:.2f} KB")
+
+    tracemalloc.stop()  # Stop memory tracking
